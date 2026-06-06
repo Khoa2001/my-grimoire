@@ -1,0 +1,82 @@
+<style>
+  pre { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12.5px; line-height: 1.65; margin: 0; white-space: pre; color: #cdd6f4; }
+  .mockup-body { background: #1e1e2e; padding: 18px 20px; border-radius: 8px; }
+  .dim { color: #6c7086; }
+  .split { gap: 24px; }
+</style>
+
+<h2>Final compact design</h2>
+<p class="subtitle">Before vs After — proposed changes to carve output</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">Before</div>
+    <div class="mockup-body">
+      <pre>── Carve plan ────────────────────────────────────────
+[1] chore: bump version to 1.0.9+50
+    Reason: version bump in pubspec + iOS project
+    Files:
+      pubspec.yaml
+      ios/Runner.xcodeproj/project.pbxproj
+
+[2] fix(guardian/behavior): use safeGet for JSON
+    Reason: safer null-access via safeGet, remove filter
+    Files:
+      lib/.../behavior_remote_datasource.dart
+      lib/.../behavior_model.dart
+
+[3] fix(guardian/notification): remove fields
+    Reason: fields dropped from entity and model
+    Files:
+      lib/.../notification_entity.dart
+      lib/.../notification_model.dart
+──────────────────────────────────────────────────────
+Total: 6 groups · 9 files
+
+Actions:
+  [commit all]       — commit all groups in order
+  [commit 1 2]       — commit specific groups
+  [skip 2]           — exclude from plan
+  [edit 2: message]  — change commit message
+  [stop]             — stop, leave dirty</pre>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">After</div>
+    <div class="mockup-body">
+      <pre>── Carve plan ────────────────────────────────────────
+[1] chore: bump version to 1.0.9+50
+    <span class="dim">Runner.xcodeproj/project.pbxproj  pubspec.yaml</span>
+
+[2] fix(guardian/behavior): use safeGet for JSON
+    <span class="dim">datasources/behavior_remote_datasource.dart</span>
+    <span class="dim">models/behavior_model.dart</span>
+
+[3] fix(guardian/notification): remove fields
+    <span class="dim">entities/notification_entity.dart</span>
+    <span class="dim">models/notification_model.dart</span>
+
+[4] feat(guardian/notification): render HTML body
+    <span class="dim">views/notification_detail_screen.dart</span>
+
+[5] feat(guardian/notification): fallback in list
+    <span class="dim">widgets/noti_item.dart</span>
+
+[6] feat(guardian/home): restore attendance feed
+    <span class="dim">widgets/attendance_feed.dart</span>
+──────────────────────────────────────────────────────
+6 groups · 9 files  (? for help)</pre>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <p class="label">Changes</p>
+  <ul>
+    <li><strong>Removed</strong> <code>Reason:</code> label — redundant with commit message</li>
+    <li><strong>Files</strong> shown inline (dimmed), last 2 path segments for context</li>
+    <li><strong>Actions menu hidden</strong> — type <code>?</code> to display full help</li>
+    <li><strong>Footer</strong> condensed: <code>6 groups · 9 files  (? for help)</code></li>
+  </ul>
+</div>

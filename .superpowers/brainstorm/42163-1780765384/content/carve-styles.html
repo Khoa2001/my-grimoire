@@ -1,0 +1,117 @@
+<style>
+  .mockup pre {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre;
+    color: #cdd6f4;
+  }
+  .mockup-body { background: #1e1e2e; padding: 16px; border-radius: 6px; }
+  .tag { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 999px; margin-left: 8px; vertical-align: middle; }
+  .tag-current { background: #45475a; color: #cdd6f4; }
+  .tag-rec { background: #a6e3a1; color: #1e1e2e; font-weight: bold; }
+  .tag-bold { background: #89b4fa; color: #1e1e2e; }
+  .cards { gap: 20px; }
+  .card { cursor: pointer; }
+</style>
+
+<h2>Carve output styles</h2>
+<p class="subtitle">Which layout feels right? Click to select — multiple allowed.</p>
+
+<div class="cards" data-multiselect>
+
+  <div class="card" data-choice="current" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>Current <span class="tag tag-current">as-is</span></h3>
+      <p>Verbose: Reason + full file paths listed under each group</p>
+    </div>
+    <div class="card-image">
+      <div class="mockup-body">
+        <pre>── Carve plan ───────────────────────────────
+[1] chore: bump version to 1.0.9+50
+    Reason: version bump in pubspec + iOS
+    Files:
+      pubspec.yaml
+      ios/Runner.xcodeproj/project.pbxproj
+
+[2] fix(guardian/behavior): use safeGet
+    Reason: safer null-access, remove filter
+    Files:
+      lib/.../behavior_remote_datasource.dart
+      lib/.../behavior_model.dart
+─────────────────────────────────────────────
+Total: 6 groups · 9 files</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="compact" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>Compact <span class="tag tag-rec">recommended</span></h3>
+      <p>Drop Reason label (redundant with message). Files inline, basename only, dimmed.</p>
+    </div>
+    <div class="card-image">
+      <div class="mockup-body">
+        <pre>── Carve plan ───────────────────────────────
+[1] chore: bump version to 1.0.9+50
+    <span style="color:#6c7086">pubspec.yaml  project.pbxproj</span>
+
+[2] fix(guardian/behavior): use safeGet …
+    <span style="color:#6c7086">behavior_remote_datasource.dart  behavior_model.dart</span>
+
+[3] fix(guardian/notification): rm fields
+    <span style="color:#6c7086">notification_entity.dart  notification_model.dart</span>
+─────────────────────────────────────────────
+6 groups · 9 files  →  commit all / commit 1 2 / skip 2 / stop</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="table" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>Table <span class="tag tag-bold">scannable</span></h3>
+      <p>Grid layout — group number, message, file count in aligned columns.</p>
+    </div>
+    <div class="card-image">
+      <div class="mockup-body">
+        <pre>── Carve plan ─────────────────────────────────────────
+  #  commit                                       files
+  ─  ──────────────────────────────────────────  ──────
+  1  chore: bump version to 1.0.9+50               2
+  2  fix(guardian/behavior): use safeGet …          2
+  3  fix(guardian/notification): rm fields          2
+  4  feat(guardian/notification): HTML body         1
+  5  feat(guardian/notification): fallback text     1
+  6  feat(guardian/home): restore attendance        1
+──────────────────────────────────────────────────────
+6 groups · 9 files
+
+commit all │ commit 1 2 │ skip 2 │ edit 2: msg │ stop</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="minimal" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>Minimal</h3>
+      <p>One line per group. No files shown by default — reveal on demand.</p>
+    </div>
+    <div class="card-image">
+      <div class="mockup-body">
+        <pre>── Carve plan ───────────────────────────────
+  1  chore: bump version to 1.0.9+50
+  2  fix(guardian/behavior): use safeGet …
+  3  fix(guardian/notification): rm fields
+  4  feat(guardian/notification): HTML body
+  5  feat(guardian/notification): fallback
+  6  feat(guardian/home): restore attendance
+─────────────────────────────────────────────
+6 groups · 9 files
+
+&gt; _</pre>
+      </div>
+    </div>
+  </div>
+
+</div>

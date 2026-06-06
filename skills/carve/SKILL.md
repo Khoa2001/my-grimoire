@@ -43,38 +43,43 @@ For each group, write a commit message:
 
 ## Step 4 — Display ALL groups together
 
+Rules:
+- No `Reason:` line — the commit message already conveys intent.
+- Files: show the **last 2 path segments** of each file path, space-separated on one line. If a group has more than 3 files, wrap to a second indented line.
+- Footer: `N groups · M files  (? for help)` — no `Total:` prefix.
+- Do NOT show the actions menu here. It appears only when the user types `?`.
+
 Show this exact format:
 
 ```
 ── Carve plan ──────────────────────────────────────────
 [1] feat(auth): add login flow
-    Reason: Login feature implementation
-    Files:
-      lib/features/auth/presentation/views/login_view.dart
-      lib/features/auth/presentation/bloc/auth_bloc.dart
+    views/login_view.dart  bloc/auth_bloc.dart
 
 [2] fix(ui): correct button padding
-    Reason: Visual fix for CTA buttons
-    Files:
-      lib/common/widgets/app_button.dart
+    widgets/app_button.dart
 
 [3] chore: update dependencies
-    Reason: Dependency version bumps
-    Files:
-      pubspec.yaml
-      pubspec.lock
+    pubspec.yaml  pubspec.lock
 ────────────────────────────────────────────────────────
-Total: 3 groups · 6 files
-
-Actions:
-  [commit all]       — commit all groups in order
-  [commit 1 2]       — commit specific groups (space or comma separated)
-  [skip 2]           — exclude group from plan
-  [edit 2: message]  — change a group's commit message
-  [stop]             — stop, leave everything dirty
+3 groups · 6 files  (? for help)
 ```
 
 ## Step 5 — Process user action
+
+**`?`** (or `help`):
+  - Print the full actions reference:
+
+    ```
+    Actions:
+      commit all       — commit all groups in order
+      commit 1 2       — commit specific groups (space or comma separated)
+      skip 2           — exclude group from plan
+      edit 2: message  — change a group's commit message
+      stop             — stop, leave everything dirty
+    ```
+
+  - Re-display the current plan immediately after.
 
 **`commit all`** (or `all` / `yes` / `y`):
   - For each group in number order:
@@ -125,4 +130,4 @@ Bad:
 
 ## Context
 
-This is a Claude Code skill file. Install by copying to `~/.claude/skills/carve/SKILL.md`.
+This is a Claude Code skill file at `~/.claude/skills/carve/SKILL.md`. No code to compile, no tests to run.
