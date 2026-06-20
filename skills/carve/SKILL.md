@@ -39,7 +39,8 @@ For each group, write a commit message:
 - Subject ≤50 chars, hard cap 72. No trailing period.
 - Imperative mood: "add", "fix", "remove" — not "added", "fixes"
 - Body only when the *why* is non-obvious. Wrap at 72 chars.
-- Never include: "this commit", "I", "we", emoji (unless project convention), AI attribution
+- Never include in the subject/summary line: "this commit", "I", "we", emoji (unless project convention), or AI self-reference.
+- Append a `Co-Authored-By:` trailer as its own paragraph after the body (blank line separator), using whatever convention the current agent/session normally uses for commits (name + noreply email) — same as it would for any other commit.
 
 ## Step 4 — Display ALL groups together
 
@@ -84,7 +85,17 @@ Show this exact format:
 **`commit all`** (or `all` / `yes` / `y`):
   - For each group in number order:
     1. `git add -- <file1> <file2> ...` — quote each path
-    2. `git commit -m "<message>"` (heredoc for multi-line)
+    2. Commit via heredoc so the body and trailer survive intact:
+       ```bash
+       git commit -m "$(cat <<'EOF'
+       <type>(<scope>): <summary>
+
+       <optional body>
+
+       Co-Authored-By: <Agent Name> <noreply-email>
+       EOF
+       )"
+       ```
     3. Report: `✓ [N] <commit message>`
   - End: "All N groups committed. Working tree is clean."
 
@@ -100,6 +111,7 @@ Show this exact format:
 **`edit 2: new message`**:
   - Replace that group's commit message with the provided text
   - If message is empty: re-prompt "Message is empty — provide a message or say skip."
+  - If the new message has no `Co-Authored-By:` line, append one automatically before committing. If it already has one, don't duplicate.
   - Re-display updated plan so user reviews before committing
 
 **`stop`** (or `done` / `quit` / `enough`):
