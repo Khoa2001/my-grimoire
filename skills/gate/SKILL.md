@@ -65,3 +65,31 @@ Step 3 (review issues) into one list. Classify each as:
 
 When in doubt between the two, classify as `ask-user` — never guess on
 something that changes behavior ambiguously.
+
+## Step 5 — Display findings
+
+Group findings by source (`Tests`, `Lint`, `Review`, etc — use the check's
+own name for check-derived groups). Within each group, `auto-fix` findings
+are already-applied by the time this displays (see Step 6), shown as
+`✓ fixed: ...`; `ask-user` findings are numbered sequentially across the
+whole list (not per-group) so `approve 1 3` can span groups.
+
+Show this exact format:
+
+```
+── Gate: 2 checks run · 5 findings ─────────────────────
+Tests (npm test)
+  ✓ fixed: src/utils/parse.ts:42 — off-by-one in slice bound
+
+Lint (eslint)
+  ✓ fixed: src/App.tsx:10 — unused import
+
+Review
+  [1] src/auth/session.ts:88 — token expiry uses `<` should be `<=`
+  [2] src/api/client.ts:15 — retry loop has no backoff, could hot-loop
+──────────────────────────────────────────────────────────
+2 auto-fixed · 2 need your call  (? for help)
+```
+
+If there are zero `ask-user` findings after auto-fixes are applied, skip
+straight to Step 7 (clean) instead of displaying an empty action prompt.
