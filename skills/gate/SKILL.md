@@ -20,3 +20,17 @@ git diff HEAD
 If both return empty output: respond "Nothing to gate. Working tree is clean." and stop.
 
 **Merge conflicts detected** (`git status` shows `UU`/`AA`/`DD`): warn "Conflicts detected in <files> — excluding them. Resolve conflicts first." Exclude conflicted files from all checks and review.
+
+## Step 2 — Detect and run project checks
+
+Read `skills/gate/references/check-detection.md` for the detection
+heuristics, then apply them to the current repo.
+
+Run every check the heuristics detect. Only run checks relevant to files
+that changed in the diff from Step 1 when the check tool supports scoping
+(e.g. `eslint <changed files>`); otherwise run the project-wide command.
+
+Collect results as a list of `{check_name, command, exit_code, output}`.
+If a check command itself fails to execute (tool not installed, e.g. `npm`
+missing) — note it once for the final summary footer, don't block the
+remaining flow, and don't retry it.
