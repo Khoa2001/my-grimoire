@@ -140,3 +140,30 @@ unresolved." and exit — do not proceed to Step 7.
   manually or re-run /gate." Do not proceed to Step 7.
 - **A `git` command fails** (e.g. `git diff` errors mid-loop): show the
   exact error, do not retry, ask the user to resolve it, then stop.
+
+## Step 7 — Clean handoff
+
+Reached when every finding is resolved (auto-fixed, approved-and-fixed, or
+skipped) and no `ask-user` findings remain.
+
+Respond: "Working tree clean — N findings resolved this run. Run /carve to
+split into commits?"
+
+- If the user confirms (`yes` / `y` / `/carve`): invoke the `carve` skill.
+- If the user declines: respond "Done." and stop.
+
+## Edge Cases
+
+- **All findings skipped**: Step 7's "N findings resolved" should read "0
+  findings resolved, N skipped" instead — still offer the `/carve` handoff
+  since the tree itself isn't blocked, just unvalidated on those points.
+- **No checks detected at all** (no test/lint tooling in the repo): Step 2
+  produces zero check results; the run proceeds with review-only findings.
+- **Single ask-user finding remaining after partial approval**: display it
+  normally per Step 5, same actions available.
+
+## Context
+
+This is a Claude Code skill file at `~/.claude/skills/gate/SKILL.md`, with
+detection heuristics in `~/.claude/skills/gate/references/check-detection.md`.
+No code to compile, no tests to run for the skill itself.
