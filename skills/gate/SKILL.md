@@ -34,3 +34,34 @@ Collect results as a list of `{check_name, command, exit_code, output}`.
 If a check command itself fails to execute (tool not installed, e.g. `npm`
 missing) — note it once for the final summary footer, don't block the
 remaining flow, and don't retry it.
+
+## Step 3 — Review the diff
+
+Read the full diff from Step 1 and review it for correctness and quality
+bugs — same bar as the built-in `/code-review`: logic errors, edge cases,
+security issues, resource leaks, off-by-ones, wrong operators, missing
+null/bounds checks. Do this inline in the main conversation — do not
+delegate to a subagent, since the fix loop in Step 5 needs to stay
+conversational with the user.
+
+Do not flag style/formatting nits already caught by a lint check from
+Step 2.
+
+For each issue found, record `{source: "review", file, line, problem,
+fix_description}`.
+
+## Step 4 — Classify findings
+
+Combine every finding from Step 2 (failing checks, lint violations) and
+Step 3 (review issues) into one list. Classify each as:
+
+- **`auto-fix`** — mechanical fixes (formatting, lint-autofixable issues,
+  import order, trivial typos) OR a bug with exactly one unambiguous
+  correct fix (off-by-one, wrong comparison operator, missing null check
+  where the correct check is obvious from surrounding code).
+- **`ask-user`** — anything touching intent, any fix with more than one
+  reasonable approach, or a failing test whose correct behavior isn't
+  obvious from context alone.
+
+When in doubt between the two, classify as `ask-user` — never guess on
+something that changes behavior ambiguously.
