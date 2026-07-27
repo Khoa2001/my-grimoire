@@ -49,4 +49,5 @@ The body is instruction prose Claude Code follows when the skill is invoked.
 
 | Skill | Trigger | Purpose |
 |-------|---------|---------|
+| gate | `/gate` | Validate a dirty working tree before commit — run project checks, review the diff, auto-fix safe findings, ask about judgment calls, loop until clean. |
 | carve | `/carve` | Carve dirty working tree into atomic, feature-separated commits. Analyzes all changes at once, proposes groups, lets user commit/skip/edit. |
