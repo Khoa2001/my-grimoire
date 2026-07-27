@@ -93,3 +93,50 @@ Review
 
 If there are zero `ask-user` findings after auto-fixes are applied, skip
 straight to Step 7 (clean) instead of displaying an empty action prompt.
+
+## Step 6 — Fix loop
+
+On each pass:
+
+1. Apply every `auto-fix` finding immediately (edit the file directly).
+2. Re-run only the checks whose files were just touched (from Step 2's
+   check list) — not the full check suite, unless no check scoping is
+   possible for that tool.
+3. Display the result per Step 5.
+4. If there are `ask-user` findings remaining, wait for user action:
+
+**`?`** (or `help`): print the actions reference, then re-display findings.
+
+```
+Actions:
+  approve 1 2      — apply finding as proposed
+  fix 2: <note>    — apply with your instruction instead
+  skip 2           — leave finding unresolved, exclude from re-checks
+  stop             — stop, leave remaining findings as-is
+```
+
+**`approve 1 2`** (space or comma separated): apply each named finding's
+proposed fix exactly as described, then start a new pass (back to Step 6
+Step 1) — re-running affected checks and re-review only if new code was
+touched.
+
+**`fix 2: <note>`**: apply the finding's fix per the user's instruction
+instead of the original proposal, then start a new pass.
+
+**`skip 2`** (or `skip 1 3` for multiple): remove those findings from the
+active list permanently for this `/gate` run (do not re-propose them this
+session). Re-display remaining findings.
+
+**`stop`** (or `done` / `quit`): respond "Gate stopped. N findings remain
+unresolved." and exit — do not proceed to Step 7.
+
+### Error handling
+
+- **Auto-fix breaks something that passed before**: do not silently
+  re-attempt the same fix. Surface it as a new `ask-user` finding on the
+  next pass's display.
+- **Max-pass guard**: after 5 passes through this loop, stop regardless of
+  remaining findings: "Stopped after 5 passes. N findings remain — resolve
+  manually or re-run /gate." Do not proceed to Step 7.
+- **A `git` command fails** (e.g. `git diff` errors mid-loop): show the
+  exact error, do not retry, ask the user to resolve it, then stop.
