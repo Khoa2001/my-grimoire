@@ -20,5 +20,4 @@ ln -s $(pwd)/skills/carve ~/.claude/skills/carve
 
 | Skill | Trigger | Description |
 |-------|---------|-------------|
-| [gate](skills/gate/SKILL.md) | `/gate` | Validate a dirty working tree before commit — run project checks, review the diff, auto-fix safe findings, ask about judgment calls, loop until clean, then offer /carve. |
 | [carve](skills/carve/SKILL.md) | `/carve` | Carve a dirty working tree into clean, atomic, feature-separated commits. Shows all groups at once for parallel review. |
