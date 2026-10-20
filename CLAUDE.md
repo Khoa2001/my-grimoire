@@ -50,3 +50,4 @@ The body is instruction prose Claude Code follows when the skill is invoked.
 | Skill | Trigger | Purpose |
 |-------|---------|---------|
 | carve | `/carve` | Carve dirty working tree into atomic, feature-separated commits. Analyzes all changes at once, proposes groups, lets user commit/skip/edit. |
+| conjure | `/conjure` | Start a feature: isolated worktree via `superpowers:using-git-worktrees`, then `superpowers:brainstorming`. Thin wrapper, invokes both by name. |
