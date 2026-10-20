@@ -129,7 +129,7 @@ Show this exact format:
 Requires `gh` authenticated. Run in order; stop at first failure and show the exact error. Never retry or force.
 
 1. **Guards**
-   - `base=$(gh repo view --json defaultBranchRef -q .defaultBranch)`; `branch=$(git branch --show-current)`.
+   - `base=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)`; `branch=$(git branch --show-current)`.
    - `branch` empty (detached HEAD) or equal to `base`: stop. "On <base>, cannot open a PR from it. Create a feature branch first." Commits stay local.
    - Uncommitted files remain (skipped groups): warn they are left out of the PR, continue.
    - `git status --short` shows conflicts: stop.
