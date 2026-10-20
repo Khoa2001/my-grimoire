@@ -74,6 +74,7 @@ Show this exact format:
     ```
     Actions:
       commit all       — commit all groups in order
+      ship             — commit all groups, push, open PR, merge to default branch, delete remote branch
       commit 1 2       — commit specific groups (space or comma separated)
       skip 2           — exclude group from plan
       edit 2: message  — change a group's commit message
@@ -98,6 +99,11 @@ Show this exact format:
        ```
     3. Report: `✓ [N] <commit message>`
   - End: "All N groups committed. Working tree is clean."
+  - Then offer: "Ship it? (`ship` = push, PR, merge to <default>, delete remote branch)". Run Step 6 only if user answers `ship` / `yes` / `y`. Anything else: exit.
+
+**`ship`**:
+  - Commit all groups (same flow as `commit all`), then run Step 6.
+  - Typing `ship` is the explicit go-ahead for commit, push, PR, merge and remote branch delete. Do not ask again, except for the guards in Step 6.
 
 **`commit 1 3`** (space or comma separated numbers):
   - Commit only the named groups in number order (same add → commit flow above)
@@ -118,9 +124,32 @@ Show this exact format:
   - Respond: "Carving stopped. N files remain uncommitted."
   - Exit
 
+## Step 6 — Ship (only after `ship` or a "yes" to the post-commit offer)
+
+Requires `gh` authenticated. Run in order; stop at first failure and show the exact error. Never retry or force.
+
+1. **Guards**
+   - `base=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)`; `branch=$(git branch --show-current)`.
+   - `branch` empty (detached HEAD) or equal to `base`: stop. "On <base>, cannot open a PR from it. Create a feature branch first." Commits stay local.
+   - Uncommitted files remain (skipped groups): warn they are left out of the PR, continue.
+   - `git status --short` shows conflicts: stop.
+2. **Remote name**: strip any `worktree-` prefix to get `remote_branch`. Else `remote_branch=$branch`.
+3. **Push**: `git push -u origin "$branch:$remote_branch"`
+4. **Create PR**: `gh pr create --base "$base" --head "$remote_branch" --title "<title>" --body "<body>"`
+   - Title: the single commit's subject if one group, else a summary subject in the same `type(scope): summary` format.
+   - Body: one bullet per commit subject, then the agent's PR attribution line if the session uses one.
+   - PR already exists for the branch: reuse it (`gh pr view --json url`).
+5. **Merge**: `gh pr merge "$remote_branch" --merge`
+   - Merge-commit method, matching repo history. No `--admin`, no `--auto`. Blocked (checks, reviews, conflicts): stop, print PR URL, leave branch intact.
+6. **Delete remote branch**: `git push origin --delete "$remote_branch"`
+   - "remote ref does not exist" means repo auto-deleted it: fine, continue.
+   - Local branch is left untouched.
+7. **Report**: `✓ Shipped: <PR url> merged into <base>, origin/<remote_branch> deleted.`
+
 ## Edge Cases
 
 - **git commit fails**: show exact error. Do not retry. Ask user to resolve.
+- **Ship step fails after commits**: commits stay local. Report which sub-step failed and what already happened (pushed? PR open?) so the user can resume by hand.
 - **All groups skipped**: "All groups skipped. N files remain uncommitted." Stop.
 - **Single group remaining after partial commit**: display it normally, same actions available.
 
