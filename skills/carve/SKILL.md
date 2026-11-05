@@ -74,7 +74,7 @@ Show this exact format:
     ```
     Actions:
       commit all       — commit all groups in order
-      ship             — commit all groups, push, open PR, merge to default branch, delete remote branch
+      ship             — commit all groups, push, open PR, merge to default branch, delete remote branch, remove local worktree + branch
       commit 1 2       — commit specific groups (space or comma separated)
       skip 2           — exclude group from plan
       edit 2: message  — change a group's commit message
@@ -99,11 +99,11 @@ Show this exact format:
        ```
     3. Report: `✓ [N] <commit message>`
   - End: "All N groups committed. Working tree is clean."
-  - Then offer: "Ship it? (`ship` = push, PR, merge to <default>, delete remote branch)". Run Step 6 only if user answers `ship` / `yes` / `y`. Anything else: exit.
+  - Then offer: "Ship it? (`ship` = push, PR, merge to <default>, delete remote branch, remove local worktree + branch)". Run Step 6 only if user answers `ship` / `yes` / `y`. Anything else: exit.
 
 **`ship`**:
   - Commit all groups (same flow as `commit all`), then run Step 6.
-  - Typing `ship` is the explicit go-ahead for commit, push, PR, merge and remote branch delete. Do not ask again, except for the guards in Step 6.
+  - Typing `ship` is the explicit go-ahead for commit, push, PR, merge, remote branch delete, and local worktree + local branch removal. Do not ask again, except for the guards in Step 6.
 
 **`commit 1 3`** (space or comma separated numbers):
   - Commit only the named groups in number order (same add → commit flow above)
@@ -131,7 +131,7 @@ Requires `gh` authenticated. Run in order; stop at first failure and show the ex
 1. **Guards**
    - `base=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)`; `branch=$(git branch --show-current)`.
    - `branch` empty (detached HEAD) or equal to `base`: stop. "On <base>, cannot open a PR from it. Create a feature branch first." Commits stay local.
-   - Uncommitted files remain (skipped groups): warn they are left out of the PR, continue.
+   - Uncommitted files remain (skipped groups): warn they are left out of the PR and that local cleanup (step 7) will stop on them, continue.
    - `git status --short` shows conflicts: stop.
 2. **Remote name**: strip any `worktree-` prefix to get `remote_branch`. Else `remote_branch=$branch`.
 3. **Push**: `git push -u origin "$branch:$remote_branch"`
@@ -143,13 +143,31 @@ Requires `gh` authenticated. Run in order; stop at first failure and show the ex
    - Merge-commit method, matching repo history. No `--admin`, no `--auto`. Blocked (checks, reviews, conflicts): stop, print PR URL, leave branch intact.
 6. **Delete remote branch**: `git push origin --delete "$remote_branch"`
    - "remote ref does not exist" means repo auto-deleted it: fine, continue.
-   - Local branch is left untouched.
-7. **Report**: `✓ Shipped: <PR url> merged into <base>, origin/<remote_branch> deleted.`
+7. **Clean up local** (only when steps 1-6 all succeeded)
+   - Removes only the worktree this ship ran in and the feature branch it just merged. Never `--force`, never `git branch -D`, never `ExitWorktree` with `discard_changes`. Never delete `base`.
+   - Guards, all checked before anything is removed. Any one fails: stop, remove nothing, say which and why.
+     - `gh pr view "$remote_branch" --json state -q .state` is `MERGED`.
+     - `branch` is the feature branch step 3 pushed, and is not `base`.
+     - `git status --porcelain` is empty (skipped groups, untracked files). Else: "Uncommitted changes in <path>. Nothing removed."
+     - `git fetch origin "$base"` succeeds and `git merge-base --is-ancestor "$branch" "origin/$base"` holds.
+     - ```bash
+       main_wt=$(git worktree list --porcelain | sed -n '1s/^worktree //p')
+       wt=$(git rev-parse --show-toplevel)
+       ```
+       `wt` differs from `main_wt`: linked worktree. Then `main_wt` must be on `base` with a clean tree (`git -C "$main_wt" branch --show-current`, `git -C "$main_wt" status --porcelain`). `git branch -d` checks merged-ness against that checkout's HEAD, so a stale or other-branch HEAD makes it refuse.
+   - Linked worktree, in order:
+     1. This session entered `wt` via `EnterWorktree`: call `ExitWorktree` with `action: "keep"` first, so the session cwd is not inside the dir being removed.
+     2. `git -C "$main_wt" merge --ff-only "origin/$base"`
+     3. `cd "$main_wt" && git worktree remove "$wt"` (leave the dir in the same command: removing the shell's cwd leaves it dangling)
+     4. `git -C "$main_wt" branch -d "$branch"`
+   - Main checkout (`wt` equals `main_wt`), tree already clean by the guard: `git switch "$base"`, `git merge --ff-only "origin/$base"`, `git branch -d "$branch"`.
+   - Any refusal (ff-only, `worktree remove`, `branch -d`): stop, show the exact error, say what is already removed. Do not retry or force.
+8. **Report**: `✓ Shipped: <PR url> merged into <base>, origin/<remote_branch> deleted, worktree <wt> and branch <branch> removed.` Main checkout case: omit the worktree clause.
 
 ## Edge Cases
 
 - **git commit fails**: show exact error. Do not retry. Ask user to resolve.
-- **Ship step fails after commits**: commits stay local. Report which sub-step failed and what already happened (pushed? PR open?) so the user can resume by hand.
+- **Ship step fails after commits**: commits stay local. Report which sub-step failed and what already happened (pushed? PR open?) so the user can resume by hand. Nothing local is removed unless steps 1-6 all succeeded.
 - **All groups skipped**: "All groups skipped. N files remain uncommitted." Stop.
 - **Single group remaining after partial commit**: display it normally, same actions available.
 
