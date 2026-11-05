@@ -20,5 +20,5 @@ ln -s $(pwd)/skills/carve ~/.claude/skills/carve
 
 | Skill | Trigger | Description |
 |-------|---------|-------------|
-| [carve](skills/carve/SKILL.md) | `/carve` | Carve a dirty working tree into clean, atomic, feature-separated commits. Shows all groups at once for parallel review. `ship` also pushes, opens a PR, merges it and deletes the remote branch. |
-| [conjure](skills/conjure/SKILL.md) | `/conjure` | Start a feature in one command: isolated worktree (`superpowers:using-git-worktrees`), then `superpowers:brainstorming`. |
+| [carve](skills/carve/SKILL.md) | `/carve` | Carve a dirty working tree into clean, atomic, feature-separated commits. Shows all groups at once for parallel review. `ship` also pushes, opens a PR, merges it, deletes the remote branch, then removes the local worktree and branch (only if the PR is merged and the worktree is clean; never forced). |
+| [conjure](skills/conjure/SKILL.md) | `/conjure` | Start a feature in one command: isolated worktree (`superpowers:using-git-worktrees`), then `superpowers:brainstorming`. New worktrees clone `node_modules` / `target` from the main checkout (`cp -c`, APFS) so installs and builds are not repeated. |

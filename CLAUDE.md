@@ -49,5 +49,5 @@ The body is instruction prose Claude Code follows when the skill is invoked.
 
 | Skill | Trigger | Purpose |
 |-------|---------|---------|
-| carve | `/carve` | Carve dirty working tree into atomic, feature-separated commits. Analyzes all changes at once, proposes groups, lets user commit/skip/edit. |
-| conjure | `/conjure` | Start a feature: isolated worktree via `superpowers:using-git-worktrees`, then `superpowers:brainstorming`. Thin wrapper, invokes both by name. |
+| carve | `/carve` | Carve dirty working tree into atomic, feature-separated commits. Analyzes all changes at once, proposes groups, lets user commit/skip/edit. `ship` also pushes, merges a PR, and removes the remote branch, then the local worktree + branch (guarded, never forced). |
+| conjure | `/conjure` | Start a feature: isolated worktree via `superpowers:using-git-worktrees`, then `superpowers:brainstorming`. Thin wrapper, invokes both by name. Also warms caches in the new worktree (`cp -c` of `node_modules` / `target` from main checkout) before setup. |
