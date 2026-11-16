@@ -1,6 +1,6 @@
 ---
 name: plane-quest
-description: Take a Plane ticket (e.g. DOTB-550) from check to In Review in one run - Plane check, conjure for gaps, build, emulator test against prototype, carve ship, then Plane seal (state + short Vietnamese comment with one screenshot per done UI item). Use when user types /plane-quest <ticket> [seal] or asks to do/finish/report a Plane ticket end to end.
+description: Take a Plane ticket (e.g. DOTB-550) from check to In Review in one run - Plane check, set In Progress when work starts, conjure for gaps, build, emulator test against prototype, carve ship, then Plane seal (state + short Vietnamese comment with one screenshot per done UI item). Use when user types /plane-quest <ticket> [seal] or asks to do/finish/report a Plane ticket end to end.
 trigger: /plane-quest
 ---
 
@@ -9,7 +9,7 @@ trigger: /plane-quest
 One command for the whole ticket loop. Steps that touch Plane are labeled **Plane**.
 
 ```
-Plane check (read only) -> conjure -> build -> emulator test -> carve ship -> Plane seal
+Plane check (read only) -> Plane start (In Progress) -> conjure -> build -> emulator test -> carve ship -> Plane seal
 ```
 
 Input: `/plane-quest <ticket|link> [seal]`. Ticket id or link (`DOTB-550`, `https://plane.bba.dotb.vn/bba/browse/DOTB-550/`). A project issues-list link has no ticket: ask for the id.
@@ -18,12 +18,12 @@ Input: `/plane-quest <ticket|link> [seal]`. Ticket id or link (`DOTB-550`, `http
 
 ## Rules
 
-- User typing `/plane-quest` is the go-ahead for: commit, push, PR, merge (via `carve` `ship`), Plane state change, Plane comment, image upload. No extra confirm before posting.
+- User typing `/plane-quest` is the go-ahead for: commit, push, PR, merge (via `carve` `ship`), Plane state changes (In Progress at start, In Review at seal), Plane comment, image upload. No extra confirm before posting.
 - Gates that stay (do not skip): brainstorming design approval, writing-plans execution-mode choice. Carve plan view does not wait.
 - Comment and ticket text: **Vietnamese, short, plain**. Reviewer has no source access: no file paths, class names, ADR numbers, commands, package names. Say what user sees and what is missing.
 - Never claim done without checking code/tests/emulator. Facts from the repo, not from ticket text.
 - Never set Done / Released / Delivered unless user says so.
-- Plane writes happen only in Phase 6. Phase 1 is read only.
+- Plane writes: Phase 1b (state only, no comment) and Phase 6 (state, comment, images). Phase 1 is read only.
 
 ## Source lookup (before any question to user)
 
@@ -48,7 +48,16 @@ All three silent: **stop and ask the user**. Show the question, which sources we
 3. Source lookup for the ticket's app (above).
 4. Check each "Cần làm" item against the repo (grep, read, scoped tests; project CLAUDE.md rules apply). Sort into Đã xong / Chưa xong.
 5. Report gaps in chat. No state change, no comment.
-6. No gaps, or `seal` arg: go to Phase 6. Else Phase 2.
+6. No gaps, or `seal` arg: go to Phase 6. Else Phase 1b.
+
+### 1b. Plane: start
+
+Gaps exist, no `seal` arg.
+
+1. Current state comes from the Phase 1 retrieve. Backlog, Grooming, Ready or Todo: go on. Any other state (In Progress, In Review, Delivered, Verifying, UAT, Released, Done, Cancelled): do not change it, note the current state in chat, go to Phase 2.
+2. `state list` for the In Progress id (project states, not guessed).
+3. `workitem update` with `state: <In Progress id>`. State only, no comment.
+4. Update fails: report in chat, go on. Does not block the build.
 
 ### 2. Conjure
 
@@ -102,7 +111,7 @@ Each image sits right under its bullet. Keep about 3 to 5 bullets per section (m
 ## Gotchas
 
 - `mcp__plane__workitem_relation list` returned 404: skip relation checks.
-- Plane project id for DOTB Phase 1: `500fe30e-3793-4e6f-91ae-d0871d3f8969`. In Review state id: `b49a6834-5337-49ce-9d85-b238229e4776` (re-check with `state list` if it fails).
+- Plane project id for DOTB Phase 1: `500fe30e-3793-4e6f-91ae-d0871d3f8969`. In Review state id: `b49a6834-5337-49ce-9d85-b238229e4776` (re-check with `state list` if it fails). In Progress state id: not recorded, always take it from `state list`.
 - Widgetbook (`packages/bba_design_system/widgetbook`) does not build on Flutter 3.47.8 (`accessibility_tools 2.7.1`): use `ui_check.sh` for screenshots instead.
 - Edited comments show "(edited)" in Plane: normal.
 - Tool call batching: classifier may reject a navigate sent in the same response as other calls; send `navigate` alone.
