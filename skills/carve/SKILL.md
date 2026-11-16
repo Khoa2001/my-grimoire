@@ -8,6 +8,10 @@ trigger: /carve
 
 Carve a dirty working tree into clean, atomic, feature-separated commits — showing all groups at once for parallel review.
 
+## Args
+
+`/carve ship` (also when another skill, e.g. `plane-quest`, invokes carve with `ship`): run Steps 1-4, show the plan once, then run the `ship` action at once without waiting for input. Step 6 guards still stop on failure.
+
 ## Step 1 — Read all changes
 
 Run both commands and read their full output:
