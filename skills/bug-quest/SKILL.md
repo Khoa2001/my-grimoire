@@ -27,7 +27,7 @@ Missing or unclear scope: ask the user (show the app and feature list from the g
 3. **No commit, push, merge** unless the user said `ship` or said so in words. Fix mode never merges.
 4. Subagents (desk pass, reviews) run on `opus`.
 5. Use the project's tools only: `ui_check.sh` for the simulator (never raw `flutter run` or `xcrun simctl`), scoped `flutter analyze` / `flutter test` (never `melos run test|analyze|format-check|check-coverage`). One simulator: sessions queue on a lock; run in background or with tool timeout 600000.
-6. Gate or kiosk apps (Attendance) are checked on the iPad simulator (its default), never an iPhone. Parent and Teacher run with `UI_CHECK_DEVICE="iPhone 17" bash tools/ui_check.sh ...`, never the default 17e (other agents use it). That width is not the prototype's, so no `--proto` side by side on iPhone 17: pixel bugs are measured in points against the prototype source (guide). Use the exact env var form the guide shows.
+6. Gate or kiosk apps (Attendance) are checked on the iPad simulator (its default), never an iPhone. Parent and Teacher run on the default iPhone 17e (390 pt, the prototype's width): plain `bash tools/ui_check.sh ...`, no env var, `--proto` side by side allowed. Only when 17e is busy (another agent holds it) fall back to `UI_CHECK_DEVICE="iPhone 17" bash tools/ui_check.sh ...`; that width is not the prototype's, so no `--proto` there: pixel bugs are measured in points against the prototype source (guide). Use the exact env var form the guide shows.
 7. A found "bug" that the repo calls intended ("SRS beats the prototype", not built yet, fake data) is not a bug. Not sure whether it is a bug: file it as "unsure" (rule 1).
 
 ## hunt
@@ -45,7 +45,7 @@ One subagent per feature (at most 3 at a time), each told: the feature folder, i
 ### 3. Simulator pass (you, one at a time)
 
 Features with a route only (the guide says which are desk only):
-Flag rules (the guide has them; `ui_check.sh` exits 2 otherwise): `--motion` needs a step and no `--each`; `--proto` replays `--tap` steps only; `--proto` with `--each` and a non-tap step exits 2; `--proto --motion` takes tap steps only. Parent and Teacher: `UI_CHECK_DEVICE="iPhone 17"` and no `--proto`.
+Flag rules (the guide has them; `ui_check.sh` exits 2 otherwise): `--motion` needs a step and no `--each`; `--proto` replays `--tap` steps only; `--proto` with `--each` and a non-tap step exits 2; `--proto --motion` takes tap steps only. Parent and Teacher: default iPhone 17e (`--proto` fine); only on the iPhone 17 fallback (`UI_CHECK_DEVICE="iPhone 17"`) skip `--proto`.
 1. Open: `bash tools/ui_check.sh <app> <route>` in the background (Attendance may add `--proto`); Read the screenshot.
 2. Flows: add `--tap`, `--tap-label`, `--type`, `--scroll`, `--back` steps; `--each` shoots every step. Try empty, long text, failure paths the fake data has. Offline is a desk pass (read bloc, repository, tests); the simulator cannot go offline here.
 3. `pixel`: take the prototype numbers from its source (Tailwind classes) and measure the app shot in points (guide: `match-a-prototype.md`). Attendance may use `--proto` with `--tap` steps.
